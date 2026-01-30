@@ -11,6 +11,7 @@ uses
 type
   TRESTAssuredAssert = class
     public
+      class procedure Fail(Message: String; Args: Array of Const);
       class procedure AreEqual<T>(Expected, Actual: T; Message: String);
     end;
 
@@ -45,8 +46,13 @@ begin
                                          PLACEHOLDER_EXPECTED,
                                          lExpectedValue.ToString());
 
-    Assert.FailFmt(Message, [], ReturnAddress);
+    Fail(Message, []);
   end;
+end;
+
+class procedure TRESTAssuredAssert.Fail;
+begin
+  Assert.FailFmt(Message, Args, ReturnAddress);
 end;
 
 end.
