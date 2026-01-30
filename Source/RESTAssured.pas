@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   System.StrUtils,
   System.Generics.Collections,
+  RESTAssured.Assert,
   RESTAssured.Settings,
   RESTAssured.RESTClient,
   RESTAssured.Spec.Response;
@@ -17,7 +18,6 @@ type
   TRESTAssuredSettings = RESTAssured.Settings.TRESTAssuredSettings;
 
   IRESTAssuredSpec = interface
-    function Given(): IRESTAssuredSpec;
     function Url(Value: String): IRESTAssuredSpec;
     function WithResource(Value: String): IRESTAssuredSpec;
     function WithHeader(Key: String; Value: Variant): IRESTAssuredSpec;
@@ -31,7 +31,6 @@ type
       FRESTRequest: IRESTRequest;
       FRESTResponse: IRESTResponse;
     public
-      function Given(): IRESTAssuredSpec;
       function Url(Value: String): IRESTAssuredSpec;
       function WithResource(Value: String): IRESTAssuredSpec;
       function WithHeader(Key: String; Value: Variant): IRESTAssuredSpec;
@@ -42,6 +41,7 @@ type
       destructor Destroy(); override;
     public
       class function Start(Url: String = ''): IRESTAssuredSpec;
+      class procedure Fail(Message: String; Args: Array Of Const);
     end;
 
 function BearerAuth(Token: String): Variant;
@@ -99,11 +99,6 @@ begin
   Result := TRESTAssuredResponseSpec.Create(lRESTResponse);
 end;
 
-function TRESTAssured.Given(): IRESTAssuredSpec;
-begin
-  Result := Self;
-end;
-
 destructor TRESTAssured.Destroy();
 begin
   FRESTClient := nil;
@@ -115,6 +110,11 @@ end;
 class function TRESTAssured.Start;
 begin
   Result := TRESTAssured.Create().Url(Url);
+end;
+
+class procedure TRESTAssured.Fail;
+begin
+  TRESTAssuredAssert.Fail(Message, Args);
 end;
 
 end.

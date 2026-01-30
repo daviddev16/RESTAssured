@@ -12,7 +12,6 @@ type
     private
       class threadvar FDefaultUrl: String;
       class threadvar FDefaultHeaders: TStringList;
-      class var FLockObject: TObject;
     public
       class function GetDefaultUrl(): String; static;
       class function GetDefaultHeaders(): TStringList; static;
@@ -33,7 +32,6 @@ class constructor TRESTAssuredSettings.Create;
 begin
   FDefaultUrl := '';
   FDefaultHeaders := TStringList.Create();
-  FLockObject := TObject.Create();
 end;
 
 class procedure TRESTAssuredSettings.SetDefaultUrl;
@@ -73,7 +71,6 @@ class destructor TRESTAssuredSettings.Destroy;
 begin
   FDefaultUrl := '';
   FreeAndNil(FDefaultHeaders);
-  FreeAndNil(FLockObject);
 end;
 
 end.

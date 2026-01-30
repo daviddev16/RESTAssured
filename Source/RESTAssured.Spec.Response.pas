@@ -12,16 +12,18 @@ uses
 
 type
   IRESTAssuredResponseSpec = interface
-    function BodyIsJson(): IRESTAssuredJSONSpec;
-    function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec;
+    function BodyAsJson(): IRESTAssuredJSONSpec;
+    function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
+    function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
   end;
 
   TRESTAssuredResponseSpec = class(TInterfacedObject, IRESTAssuredResponseSpec)
     strict private
       FRESTResponse: IRESTResponse;
     public
-      function BodyIsJson(): IRESTAssuredJSONSpec;
-      function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec;
+      function BodyAsJson(): IRESTAssuredJSONSpec;
+      function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
+      function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
     public
       constructor Create(RESTResponse: IRESTResponse);
       destructor Destroy(); override;
@@ -39,7 +41,8 @@ begin
   FRESTResponse := RESTResponse;
 end;
 
-function TRESTAssuredResponseSpec.StatusCodeIs;
+function TRESTAssuredResponseSpec.StatusCodeIs(
+  Expected: Integer): IRESTAssuredResponseSpec;
 begin
   TRESTAssuredAssert.AreEqual<Integer>(
       Expected,
@@ -47,7 +50,15 @@ begin
       'Status Code expected to be {{EXPECTED}} but got {{ACTUAL}}.');
 end;
 
-function TRESTAssuredResponseSpec.BodyIsJson;
+function TRESTAssuredResponseSpec.StatusCodeIs(
+  Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec;
+begin
+  Result := Self;
+  if not Predicate(FRESTResponse.GetStatus()) then
+    TRESTAssuredAssert.Fail('StatusCodeIs#Predicate failed.', []);
+end;
+
+function TRESTAssuredResponseSpec.BodyAsJson;
 var
   lBody: String;
   lJSONValue: TJSONValue;
