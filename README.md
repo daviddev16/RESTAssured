@@ -16,7 +16,7 @@ begin
       .WithHeader('Authorization', BasicAuth('daviddev16', 'passw0rd'))
       .PerformRequest(TRESTMethod.GET)
           .StatusCodeIs(204)
-          .BodyIsJson()
+          .BodyAsJson()
               .AssertThat('sum_result', (100 + 250))
               .AssertThat('multiply_result', (100 * 250));
 end;
@@ -40,7 +40,7 @@ begin
       .WithHeader('operator', 'sum;multiply')
       .PerformRequest(TRESTMethod.GET)
           .StatusCodeIs(204)
-          .BodyIsJson()
+          .BodyAsJson()
               .AssertThat('sum_result', (100 + 250))
               .AssertThat('multiply_result', (100 * 250));
 end;
@@ -50,4 +50,26 @@ begin
   TRESTAssuredSettings.Clear();
 end;
 
+```
+
+### Custom validation 
+
+```pascal
+procedure TMyTestObject.CustomValidationRestTest;
+begin
+  TRESTAssured.Start()
+      .WithResource('/calculator')
+      .WithParameter('x', 50)
+      .WithParameter('y', 25)
+      .WithHeader('operator', 'divide')
+      .PerformRequest(TRESTMethod.GET)
+// ...
+          .StatusCodeIs(
+              function(StatusCode: Integer): Boolean
+              begin
+                Result := (StatusCode >= 200) and (StatusCode <= 204);
+              end);
+// ...
+
+end;
 ```
