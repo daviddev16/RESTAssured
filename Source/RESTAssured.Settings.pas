@@ -10,12 +10,12 @@ uses
 type
   TRESTAssuredSettings = class sealed
     private
-      class var FDefaultUrl: String;
-      class var FDefaultHeaders: TStringList;
+      class threadvar FDefaultUrl: String;
+      class threadvar FDefaultHeaders: TStringList;
       class var FLockObject: TObject;
     public
-      class property DefaultUrl:     String      read FDefaultUrl;
-      class property DefaultHeaders: TStringList read FDefaultHeaders;
+      class function GetDefaultUrl(): String; static;
+      class function GetDefaultHeaders(): TStringList; static;
     public
       class procedure SetDefaultUrl(Value: String);
       class procedure AddDefaultHeader(Key: String; Value: Variant);
@@ -38,26 +38,29 @@ end;
 
 class procedure TRESTAssuredSettings.SetDefaultUrl;
 begin
-  TMonitor.Enter(FLockObject);
-  try
-    FDefaultUrl := Value;
-  finally
-    TMonitor.Exit(FLockObject);
-  end;
+  FDefaultUrl := Value;
 end;
 
 class procedure TRESTAssuredSettings.AddDefaultHeader;
 var
   lVariantConversor: TVariantConversor;
 begin
-  TMonitor.Enter(FLockObject);
   lVariantConversor := TVariantConversor.Create();
   try
     FDefaultHeaders.AddPair(Key, lVariantConversor.Convert(Value));
   finally
     lVariantConversor.Free();
-    TMonitor.Exit(FLockObject);
   end;
+end;
+
+class function TRESTAssuredSettings.GetDefaultHeaders;
+begin
+  Result := FDefaultHeaders;
+end;
+
+class function TRESTAssuredSettings.GetDefaultUrl;
+begin
+  Result := FDefaultUrl;
 end;
 
 class procedure TRESTAssuredSettings.Clear;

@@ -206,10 +206,10 @@ var
 begin
   TRESTAssuredUtils.CheckNotNull(RESTRequest, 'PerformRequest#RESTRequest');
 
-  lBaseUrl := TRESTAssuredSettings.DefaultUrl;
+  lBaseUrl := TRESTAssuredSettings.GetDefaultUrl();
   lBaseUrl := TRESTAssuredUtils.First([FUrl, lBaseUrl]);
 
-  lDefaultHeaders := TRESTAssuredSettings.DefaultHeaders;
+  lDefaultHeaders := TRESTAssuredSettings.GetDefaultHeaders();
 
   FClient.BaseURL := lBaseUrl;
 
@@ -219,11 +219,10 @@ begin
   lRequest.Response := lResponse;
   lRequest.Resource := RESTRequest.GetResource();
   try
-    FillParameter(lRequest, TRESTAssuredSettings.DefaultHeaders, pkHTTPHEADER);
-
     FillMethod(lRequest, RESTRequest.GetMethod());
     FillParameter(lRequest, RESTRequest.GetHeaders(), pkHTTPHEADER);
     FillParameter(lRequest, RESTRequest.GetParameters(), pkQUERY);
+    FillParameter(lRequest, lDefaultHeaders, pkHTTPHEADER);
     lRequest.Execute();
 
     Result := TNativeRESTResponse.Create(lResponse.Content,
