@@ -12,15 +12,14 @@ uses
   RESTAssured.Utils,
   RESTAssured.Assert,
   RESTAssured.Settings,
-  RESTAssured.RESTClient,
   RESTAssured.Intf.RESTClient,
+  RESTAssured.Default.RESTClient,
   RESTAssured.Spec.Response,
   RESTAssured.Utils.ErrorHandling;
 
 type
   TRESTMethod = RESTAssured.Intf.RESTClient.TRESTMethod;
   TRESTAssuredSettings = RESTAssured.Settings.TRESTAssuredSettings;
-  TNativeRESTClient = RESTAssured.RESTClient.TNativeRESTClient;
   TRESTContentType = RESTAssured.Intf.RESTClient.TRESTContentType;
   IRESTRequest = RESTAssured.Intf.RESTClient.IRESTRequest;
   IRESTResponse = RESTAssured.Intf.RESTClient.IRESTResponse;
@@ -188,26 +187,28 @@ begin
   lUrl := TRESTAssuredUtils.First([FRESTClient.GetUrl(), lUrl]);
   lContentType := TRESTAssuredUtils.First([FRESTRequest.GetContentType(), lContentType]);
   try
-    FRESTClient.SetUrl(lUrl);
-    FRESTRequest.SetContentType(lContentType);
+    try
+      FRESTClient.SetUrl(lUrl);
+      FRESTRequest.SetContentType(lContentType);
 
-    if Assigned(lHeaders) then
-      FRESTRequest.GetHeaders().AddStrings(lHeaders);
+      if Assigned(lHeaders) then
+        FRESTRequest.GetHeaders().AddStrings(lHeaders);
 
-    FBeforeEventHandler.TriggerOn(FRESTRequest);
+      FBeforeEventHandler.TriggerOn(FRESTRequest);
 
-    lRESTResponse := FRESTClient.PerformRequest(FRESTRequest);
-    Assert(lRESTResponse <> nil);
+      lRESTResponse := FRESTClient.PerformRequest(FRESTRequest);
+      Assert(lRESTResponse <> nil);
 
-    FAfterEventHandler.TriggerOn(lRESTResponse);
-
-    Result := TRESTAssuredResponseSpec.Create(lRESTResponse);
-  except
-    on Ex: Exception do
-    begin
-      lMethod := TRESTAssuredErrorHandler.Beautify<TRESTMethod>(Method);
-      TRESTAssuredErrorHandler.Handle('PerformRequest', [lMethod], Ex);
+      Result := TRESTAssuredResponseSpec.Create(lRESTResponse);
+    except
+      on Ex: Exception do
+      begin
+        lMethod := TRESTAssuredErrorHandler.Beautify<TRESTMethod>(Method);
+        TRESTAssuredErrorHandler.Handle('PerformRequest', [lMethod], Ex);
+      end;
     end;
+  finally
+    FAfterEventHandler.TriggerOn(lRESTResponse);
   end;
 end;
 

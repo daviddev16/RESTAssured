@@ -33,12 +33,14 @@ type
     procedure SetHeader(Key: String; Value: Variant);
 
     function GetParameters(): TStringList;
+    function GetParameter(Key: String): String;
     procedure SetParameter(Key: String; Value: Variant);
   end;
 
   IRESTResponse = interface
     function GetStatus(): Integer;
     function GetBody(): String;
+    function GetRESTRequest(): IRESTRequest;
   end;
 
   IRESTClient = interface

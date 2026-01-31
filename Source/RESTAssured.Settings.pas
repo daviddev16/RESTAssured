@@ -6,8 +6,8 @@ uses
   System.Classes,
   System.SysUtils,
   RESTAssured.Utils,
-  RESTAssured.RESTClient,
-  RESTAssured.Intf.RESTClient;
+  RESTAssured.Intf.RESTClient,
+  RESTAssured.Default.RESTClient;
 
 type
   TRESTAssuredSettings = class sealed

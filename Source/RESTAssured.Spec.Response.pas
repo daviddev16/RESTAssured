@@ -7,8 +7,8 @@ uses
   RESTAssured.Utils,
   RESTAssured.Assert,
   RESTAssured.Spec.JSON,
-  RESTAssured.RESTClient,
   RESTAssured.Intf.RESTClient,
+  RESTAssured.Default.RESTClient,
   DUnitX.TestFramework;
 
 type
