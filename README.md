@@ -2,74 +2,159 @@
 
 RESTAssured is a minimalist framework that allows you to create API integration tests within DUnit test procedures.
 
-### Basic example
+### Getting Started
 
+<details>
+<summary>1. First Integration Test <i>(example)</i></summary>
+
+### First Integration Test
+
+1. To get started you first need a DUnit project set up with RESTAssured units.
 ```pascal
-procedure TMyTestObject.RestCalculatorTest;
+uses
+  RESTAssured,
+  DUnitX.TestFramework;
+```
+2. Create a DUnit test procedure.
+```pascal
+[Test]
+procedure CalculatorServiceTest();
+```
+3. This test verifies that the API is calculating values correctly according to the type of operation.
+```pascal
+procedure TCalculatorServiceTest.CalculatorServiceTest;
 begin
   TRESTAssured.Start()
       .Url('http://127.0.0.1:9000')
       .WithResource('/calculator')
-      .WithParameter('x', 100)
-      .WithParameter('y', 250)
-      .WithHeader('operator', 'sum;multiply')
-      .WithHeader('Authorization', BasicAuth('daviddev16', 'passw0rd'))
+      .WithParameter('x', 50)
+      .WithParameter('y', 25)
+      .WithParameter('operator', 'plus,multiply')
       .PerformRequest(TRESTMethod.GET)
-          .StatusCodeIs(204)
+          .StatusCodeIs(200)
           .BodyAsJson()
-              .AssertThat('sum_result', (100 + 250))
-              .AssertThat('multiply_result', (100 * 250));
+              .AssertThat('MultiplyResult', 1250.0)
+              .AssertThat('PlusResult', 75.0);
 end;
 ```
 
-### Basic example + Settings per Fixture 
+</details>
 
+<details>
+<summary>2. Test Fixture With Default Settings <i>(example)</i></summary>
+
+### Test Fixture With Default Settings
+
+Sometimes, you don't want to set parameters manually for each test procedure. 
+You might use the default settings instead.
+
+1. Create a `SetupFixture` procedure;
 ```pascal
-procedure TMyTestObject.SetupFixture;
+[SetupFixture]
+procedure SetupFixture();
+
+[TearDownFixture]
+procedure TeardownFixture();
+```
+2. Setting up custom RESTAssured default values with `TRESTAssuredSettings`.
+```pascal
+procedure TCalculatorServiceTest.SetupFixture;
 begin
   TRESTAssuredSettings.SetDefaultUrl('http://127.0.0.1:9000');
-  TRESTAssuredSettings.AddDefaultHeader('Authorization', BearerAuth('Jwt Token Here'));
+  TRESTAssuredSettings.AddDefaultHeader('Authorization', BasicAuth('daviddev16', 'passw0rd'));
 end;
-
-procedure TMyTestObject.RestCalculatorTest_2;
-begin
-  TRESTAssured.Start()
-      .WithResource('/calculator')
-      .WithParameter('x', 100)
-      .WithParameter('y', 250)
-      .WithHeader('operator', 'sum;multiply')
-      .PerformRequest(TRESTMethod.GET)
-          .StatusCodeIs(204)
-          .BodyAsJson()
-              .AssertThat('sum_result', (100 + 250))
-              .AssertThat('multiply_result', (100 * 250));
-end;
-
-procedure TMyTestObject.TeardownFixture;
+```
+3. Test, Test, Test, ...
+4. Clear it up if necessary.
+```pascal
+procedure TCalculatorServiceTest.TeardownFixture;
 begin
   TRESTAssuredSettings.Clear();
 end;
-
 ```
+</details>
 
-### Custom validation 
+<details>
+<summary>3. Custom Status Code Validation <i>(example)</i></summary>
+
+### Custom Status Code Validation
+
+You might want to customize the way RESTAssured validates Status code with a custom `TPredicate<Integer>`.
+Here is an example of how to do it: 
 
 ```pascal
-procedure TMyTestObject.CustomValidationRestTest;
+procedure TCalculatorServiceTest.CalculatorServiceWithStatusCodePredicateTest;
 begin
   TRESTAssured.Start()
+      .Url('http://127.0.0.1:9000')
       .WithResource('/calculator')
       .WithParameter('x', 50)
       .WithParameter('y', 25)
-      .WithHeader('operator', 'divide')
+      .WithParameter('operator', 'plus,multiply')
       .PerformRequest(TRESTMethod.GET)
-// ...
-          .StatusCodeIs(
-              function(StatusCode: Integer): Boolean
-              begin
-                Result := (StatusCode >= 200) and (StatusCode <= 204);
-              end);
-// ...
 
+          // Custom predicate
+          .StatusCodeIs(
+              function (StatusCode: Integer): Boolean
+              begin
+                Result := (StatusCode >= 200) and (StatusCode <> 204);
+              end)
+
+          .BodyAsJson()
+              .AssertThat('MultiplyResult', 1250.0)
+              .AssertThat('PlusResult', 75.0);
 end;
 ```
+
+</details>
+
+<details>
+<summary>4. Before / After Event Trigger <i>(example)</i></summary>
+
+### Before / After Event Trigger
+
+I might want to perform some operation before and after the HTTP request. Here is a
+example of how to do it with `DoAfter(TRunnable<IRESTResponse>)` and `DoBefore(TRunnable<IRESTRequest>)`.
+
+```pascal
+procedure TMyTestObject.CreateCompanyEventTest;
+begin
+  TRESTAssured.Start()
+      .WithResource('/company')
+      .WithParameter('name', 'GitHub')
+      .WithHeader('Authorization', BearerAuth('MyJWTSecretToken'))
+      //
+      // Executes before request to the client.
+      //
+      .DoBefore(procedure (RESTRequest: IRESTRequest)
+                var
+                  lCompanyToInsert: String;
+                begin
+                  lCompanyToInsert := RESTRequest.GetParameter('name');
+                  TDatabaseService.Run('/data/INSERT_CASE001_Company_' + lCompanyToInsert + '.SQL');
+                end)
+      //
+      // Executes after request ends.
+      //
+      .DoAfter(procedure (RESTResponse: IRESTResponse)
+                var
+                  lCompanyToDelete: String;
+                  lRESTRequest: IRESTRequest;
+                begin
+                  lRESTRequest := RESTResponse.GetRESTRequest();
+                  lCompanyToDelete := lRESTRequest.GetParameter('name');
+                  TDatabaseService.Run('/data/DELETE_CASE001_Company_' + lCompanyToDelete + '.SQL');
+                end)
+
+      .PerformRequest(TRESTMethod.GET)
+          .StatusCodeIs(200)
+          .BodyAsJson()
+              .AssertThat('CompanyId', '0019ABXXC3')
+              .AssertThat('CompanyName', 'GitHub')
+              .AssertThat('CompanyCreatedAt', EncodeDateTime(2025, 04, 12, 00, 00, 00))
+              .AssertThat('CompanyCredits', 19921.2)
+              .AssertThat('CompanyDescription', 'Just github.');
+end;
+```
+
+</details>
