@@ -4,6 +4,8 @@ RESTAssured is a minimalist framework that allows you to create API integration 
 
 ### Getting Started
 
+
+
 <details>
 <summary>1. First Integration Test <i>(example)</i></summary>
 
