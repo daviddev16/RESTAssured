@@ -38,7 +38,18 @@ begin
 end;
 ```
 
+
+
+- The final resource for this specific test will be:
+`/calculator?x=50&y=25&operator=plus,multiply`
+
+- And the final URL will therefore be:
+`http://127.0.0.1:9000/calculator?x=50&y=25&operator=plus,multiply`
+
+
 </details>
+
+<br>
 
 <details>
 <summary>2. Test Fixture With Default Settings <i>(example)</i></summary>
@@ -74,6 +85,8 @@ end;
 ```
 </details>
 
+<br>
+
 <details>
 <summary>3. Custom Status Code Validation <i>(example)</i></summary>
 
@@ -107,6 +120,8 @@ end;
 ```
 
 </details>
+
+<br>
 
 <details>
 <summary>4. Before / After Event Trigger <i>(example)</i></summary>
@@ -158,6 +173,8 @@ end;
 ```
 
 </details>
+
+<br>
 
 <details>
 <summary>4. Custom HTTP Client <i>(example)</i></summary>
