@@ -30,7 +30,6 @@ class procedure TRESTAssuredAssert.AreEqual<T>;
 var
   lComparer: IComparer<T>;
   lExpectedValue, lActualValue: TValue;
-  lMessage: String;
 begin
   lComparer := TComparer<T>.Default;
   if lComparer.Compare(Expected, Actual) <> 0 then

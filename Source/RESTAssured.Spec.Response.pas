@@ -8,6 +8,7 @@ uses
   RESTAssured.Assert,
   RESTAssured.Spec.JSON,
   RESTAssured.RESTClient,
+  RESTAssured.Intf.RESTClient,
   DUnitX.TestFramework;
 
 type
@@ -32,7 +33,8 @@ type
 implementation
 
 uses
-  System.JSON;
+  System.JSON,
+  RESTAssured.Utils.ErrorHandling;
 
 { TRESTAssuredResponseSpec }
 
@@ -48,14 +50,17 @@ begin
       Expected,
       FRESTResponse.GetStatus(),
       'Status Code expected to be {{EXPECTED}} but got {{ACTUAL}}.');
+
+  Result := Self;
 end;
 
 function TRESTAssuredResponseSpec.StatusCodeIs(
   Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec;
 begin
-  Result := Self;
   if not Predicate(FRESTResponse.GetStatus()) then
-    TRESTAssuredAssert.Fail('StatusCodeIs#Predicate failed.', []);
+    TRESTAssuredAssert.Fail('Predicate failed.', []);
+
+  Result := Self;
 end;
 
 function TRESTAssuredResponseSpec.BodyAsJson;
@@ -64,7 +69,12 @@ var
   lJSONValue: TJSONValue;
 begin
   lBody := FRESTResponse.GetBody();
-  lJSONValue := TJSONValue.ParseJSONValue(lBody);
+  try
+    lJSONValue := TJSONValue.ParseJSONValue(lBody, True, True);
+  except
+    on Ex: Exception do
+      TRESTAssuredErrorHandler.Handle('BodyAsJson', [lBody], Ex);
+  end;
   Result := TRESTAssuredJSONSpec.Create(lJSONValue);
 end;
 

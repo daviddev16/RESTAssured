@@ -9,53 +9,37 @@ uses
   System.SysUtils,
   System.StrUtils,
   System.Variants,
+  DUnitX.WeakReference,
+  RESTAssured.Intf.RESTClient,
   RESTAssured.Utils,
-  RESTAssured.Settings;
+  RESTAssured.Utils.ErrorHandling;
 
 type
-  {$SCOPEDENUMS ON}
-  TRESTMethod = (GET, POST, PUT, DELETE);
-  {$SCOPEDENUMS OFF}
-
-  IRESTRequest = interface
-    function GetMethod(): TRESTMethod;
-    procedure SetMethod(Method: TRESTMethod);
-
-    function GetResource(): String;
-    procedure SetResource(Resource: String);
-
-    function GetHeaders(): TStringList;
-    procedure SetHeader(Key: String; Value: Variant);
-
-    function GetParameters(): TStringList;
-    procedure SetParameter(Key: String; Value: Variant);
-  end;
-
-  IRESTResponse = interface
-    function GetStatus(): Integer;
-    function GetBody(): String;
-  end;
-
-  IRESTClient = interface
-    function NewRequest(): IRESTRequest;
-    function PerformRequest(RESTRequest: IRESTRequest): IRESTResponse;
-    procedure SetUrl(Value: String);
-  end;
-
   TNativeRESTRequest = class(TInterfacedObject, IRESTRequest)
     strict private
       FHeaders: TStringList;
       FParameters: TStringList;
+      FBody: String;
       FResource: String;
+      FContentType: String;
       FMethod: TRESTMethod;
       FVariantConversor: TVariantConversor;
     public
       function GetMethod(): TRESTMethod;
       procedure SetMethod(Method: TRESTMethod);
+
+      function GetBody(): String;
+      procedure SetBody(Content: String);
+
+      function GetContentType(): String;
+      procedure SetContentType(Value: String);
+
       function GetResource(): String;
-      procedure SetResource(Resource: String);
+      procedure SetResource(Value: String);
+
       function GetHeaders(): TStringList;
       procedure SetHeader(Key: String; Value: Variant);
+
       function GetParameters(): TStringList;
       procedure SetParameter(Key: String; Value: Variant);
     public
@@ -89,51 +73,48 @@ type
       function NewRequest(): IRESTRequest;
       function PerformRequest(RESTRequest: IRESTRequest): IRESTResponse;
       procedure SetUrl(Value: String);
+      function GetUrl(): String;
     public
       constructor Create();
       destructor Destroy(); override;
     end;
 
-  TRESTClientFactory = class sealed
+  TNativeRESTClientFactory = class(TInterfacedObject, IRESTClientFactory)
     public
-      class function New(): IRESTClient;
+      function NewRESTClient(): IRESTClient;
     end;
 
 implementation
 
 { TNativeRESTRequest }
 
-constructor TNativeRESTRequest.Create();
+constructor TNativeRESTRequest.Create;
 begin
   FHeaders := TStringList.Create();
   FParameters := TStringList.Create();
   FVariantConversor := TVariantConversor.Create();
-end;
-
-procedure TNativeRESTClient.SetUrl;
-begin
-  TRESTAssuredUtils.CheckNotEmpty(Value, 'SetUrl#Value');
-  FUrl := Value;
+  FBody := '';
+  FContentType := '';
 end;
 
 procedure TNativeRESTRequest.SetResource;
 begin
-  TRESTAssuredUtils.CheckNotEmpty(Resource, 'SetResource#Resource');
-  FResource := TRESTAssuredUtils.TrimPath(Resource);
+  TRESTAssuredUtils.CheckNotEmpty(Value, 'Value');
+  FResource := TRESTAssuredUtils.TrimPath(Value);
 end;
 
 procedure TNativeRESTRequest.SetHeader;
 begin
-  TRESTAssuredUtils.CheckNotEmpty(Key, 'SetHeader#Key');
-  TRESTAssuredUtils.CheckNotNull(Value, 'SetHeader#Value');
+  TRESTAssuredUtils.CheckNotEmpty(Key, 'Key');
+  TRESTAssuredUtils.CheckNotNull(Value, 'Value');
 
   FHeaders.AddPair(Key, FVariantConversor.Convert(Value));
 end;
 
 procedure TNativeRESTRequest.SetParameter;
 begin
-  TRESTAssuredUtils.CheckNotEmpty(Key, 'SetParameter#Key');
-  TRESTAssuredUtils.CheckNotNull(Value, 'SetParameter#Value');
+  TRESTAssuredUtils.CheckNotEmpty(Key, 'Key');
+  TRESTAssuredUtils.CheckNotNull(Value, 'Value');
 
   FParameters.AddPair(Key, FVariantConversor.Convert(Value));
 end;
@@ -141,6 +122,18 @@ end;
 procedure TNativeRESTRequest.SetMethod;
 begin
   FMethod := Method;
+end;
+
+procedure TNativeRESTRequest.SetBody;
+begin
+  TRESTAssuredUtils.CheckNotNull(Content, 'Content');
+  FBody := Content;
+end;
+
+procedure TNativeRESTRequest.SetContentType;
+begin
+  TRESTAssuredUtils.CheckNotNull(Value, 'Value');
+  FContentType := Value;
 end;
 
 function TNativeRESTRequest.GetResource;
@@ -156,6 +149,16 @@ end;
 function TNativeRESTRequest.GetParameters;
 begin
   Result := FParameters;
+end;
+
+function TNativeRESTRequest.GetBody;
+begin
+  Result := FBody;
+end;
+
+function TNativeRESTRequest.GetContentType;
+begin
+  Result := FContentType;
 end;
 
 function TNativeRESTRequest.GetMethod;
@@ -194,39 +197,51 @@ end;
 constructor TNativeRESTClient.Create;
 begin
   FClient := TRESTClient.Create(nil);
+  FClient.RaiseExceptionOn500 := False;
 end;
 
 function TNativeRESTClient.PerformRequest;
 var { Native stuff }
   lRequest: TRESTRequest;
   lResponse: TRESTResponse;
-var
-  lBaseUrl: String;
-  lDefaultHeaders: TStringList;
+  lMessage: String;
+  lBody, lContentType: String;
 begin
-  TRESTAssuredUtils.CheckNotNull(RESTRequest, 'PerformRequest#RESTRequest');
+  TRESTAssuredUtils.CheckNotNull(RESTRequest, 'RESTRequest');
+  FClient.BaseURL := FUrl;
 
-  lBaseUrl := TRESTAssuredSettings.GetDefaultUrl();
-  lBaseUrl := TRESTAssuredUtils.First([FUrl, lBaseUrl]);
-
-  lDefaultHeaders := TRESTAssuredSettings.GetDefaultHeaders();
-
-  FClient.BaseURL := lBaseUrl;
-
-  lRequest := TRESTRequest.Create(nil);
+  lRequest := TRESTRequest.Create(FClient);
   lResponse := TRESTResponse.Create(nil);
 
   lRequest.Response := lResponse;
   lRequest.Resource := RESTRequest.GetResource();
-  try
-    FillMethod(lRequest, RESTRequest.GetMethod());
-    FillParameter(lRequest, RESTRequest.GetHeaders(), pkHTTPHEADER);
-    FillParameter(lRequest, RESTRequest.GetParameters(), pkQUERY);
-    FillParameter(lRequest, lDefaultHeaders, pkHTTPHEADER);
-    lRequest.Execute();
 
-    Result := TNativeRESTResponse.Create(lResponse.Content,
-                                         lResponse.StatusCode);
+  lBody := RESTRequest.GetBody();
+  lContentType := RESTRequest.GetContentType();
+  try
+    try
+      if not lBody.IsEmpty() then
+        lRequest.AddBody(lBody, lContentType);
+
+      FillMethod(lRequest, RESTRequest.GetMethod());
+      FillParameter(lRequest, RESTRequest.GetHeaders(), pkHTTPHEADER);
+      FillParameter(lRequest, RESTRequest.GetParameters(), pkQUERY);
+
+      lRequest.Execute();
+
+      Result := TNativeRESTResponse.Create(lResponse.Content,
+                                           lResponse.StatusCode);
+    except
+      on Ex: Exception do
+      begin
+        lMessage := '';
+        lMessage := lMessage + 'An error ocurred while requesting resource ';
+        lMessage := lMessage + '"' + lRequest.FullResource + '" ';
+        lMessage := lMessage + '(ClassName: %s, Message: %s)';
+
+        raise ERESTAssuredException.CreateFmt(lMessage, [Ex.ClassName, Ex.Message]);
+      end;
+    end;
   finally
     lRequest.Free();
     lResponse.Free();
@@ -260,15 +275,26 @@ begin
   Result := TNativeRESTRequest.Create();
 end;
 
+procedure TNativeRESTClient.SetUrl;
+begin
+  TRESTAssuredUtils.CheckNotEmpty(Value, 'Value');
+  FUrl := Value;
+end;
+
+function TNativeRESTClient.GetUrl: String;
+begin
+  Result := FUrl;
+end;
+
 destructor TNativeRESTClient.Destroy;
 begin
-  FClient.Free();
+  FClient := nil;
   inherited;
 end;
 
-{ TRESTClientFactory }
+{ TNativeRESTClientFactory }
 
-class function TRESTClientFactory.New;
+function TNativeRESTClientFactory.NewRESTClient;
 begin
   Result := TNativeRESTClient.Create();
 end;

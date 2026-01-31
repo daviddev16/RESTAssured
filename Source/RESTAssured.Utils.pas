@@ -21,6 +21,7 @@ type
       class procedure CheckNotEmpty(Content: String; Name: String);
       class procedure CheckNotNull(Value: Variant; Name: String); overload;
       class procedure CheckNotNull(Instance: IInterface; Name: String); overload;
+      class procedure CheckNotNull(Clazz: TClass; Name: String); overload;
       class function Replace(Content, FromStr, ToStr: String): String;
       class function First(Arguments: Array of String): String;
       class function TrimPath(Path: String): String;
@@ -58,7 +59,7 @@ class procedure TRESTAssuredUtils.CheckNotNull(
   Value: Variant;
   Name: String);
 begin
-  if VarIsNull(Value) then
+  if not VarIsNull(Value) then
     Exit;
   raise ECheckerException.CreateFmt('"%s" must not be null.', [Name]);
 end;
@@ -72,6 +73,14 @@ begin
   raise ECheckerException.CreateFmt('"%s" must not be null.', [Name]);
 end;
 
+class procedure TRESTAssuredUtils.CheckNotNull(
+  Clazz: TClass;
+  Name: String);
+begin
+  if Assigned(Clazz) then
+    Exit;
+  raise ECheckerException.CreateFmt('"%s" must not be null.', [Name]);
+end;
 
 { TVariantConversor }
 
