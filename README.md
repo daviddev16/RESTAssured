@@ -51,8 +51,6 @@ end;
 
 </details>
 
-<br>
-
 <details>
 <summary>2. Test Fixture With Default Settings <i>(example)</i></summary>
 
@@ -87,8 +85,6 @@ end;
 ```
 </details>
 
-<br>
-
 <details>
 <summary>3. Custom Status Code Validation <i>(example)</i></summary>
 
@@ -122,8 +118,6 @@ end;
 ```
 
 </details>
-
-<br>
 
 <details>
 <summary>4. Before / After Event Trigger <i>(example)</i></summary>
@@ -175,8 +169,6 @@ end;
 ```
 
 </details>
-
-<br>
 
 <details>
 <summary>4. Custom HTTP Client <i>(example)</i></summary>
