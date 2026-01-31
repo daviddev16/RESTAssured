@@ -158,3 +158,52 @@ end;
 ```
 
 </details>
+
+<details>
+<summary>4. Custom HTTP Client <i>(example)</i></summary>
+
+### Custom HTTP Client
+
+RESTAssured has a built-in HTTP client abstraction located in `RESTAssured.Intf.RESTClient` 
+that relies primary on `REST.Client` native Delphi client. All HTTP interaction inside RESTAssured is 
+made using this abstractions.
+
+
+`TRESTAssured` will always use the <b>default HTTP client factory</b>, witch is `TNativeRESTClientFactory`.
+
+
+if you want to implement your own HTTP Client, you can start by implementing `IRESTRequest`, `IRESTResponse`, `IRESTClient` and finally `IRESTClientFactory`.
+
+```pascal
+  TNativeRESTClientFactory = class(TInterfacedObject, IRESTClientFactory)
+    public
+      function NewRESTClient(): IRESTClient;
+    end;
+
+implementation
+
+{ TNativeRESTClientFactory }
+
+function TNativeRESTClientFactory.NewRESTClient;
+begin
+  Result := TNativeRESTClient.Create();
+end;
+```
+
+
+> The default implementation of IRESTClientFactory.
+
+
+Here is how you can configure your own HTTP client factory.
+
+```pascal
+procedure TMyTestObject.SetupFixture;
+begin
+  TRESTAssuredSettings.SetRESTClientFactory(TMyCustomRESTClientFactory.Create());
+end;
+```
+
+
+
+
+
