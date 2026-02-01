@@ -259,7 +259,7 @@ function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec;
 ### Types of Assertations
 
 RESTAssured provide a set of ways and functions to test your code. 
-You can either use static functions (with `TRESTAssuredAssert`) or assertations for that (using a test spec interface).
+You can either use static functions (with `TRESTAssuredAssert`) or spec assertation (using a test spec interface).
 
 ### Static functions
 
