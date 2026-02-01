@@ -213,7 +213,123 @@ begin
   TRESTAssuredSettings.SetRESTClientFactory(TMyCustomRESTClientFactory.Create());
 end;
 ```
+</details>
 
+<details>
+<summary>5. Specification model <i>(example)</i></summary>
+
+### Specification model
+
+RESTAssured has a set of interfaces that represents a test specification. Each specification 
+function should return either itself or a new specification for a given path. For example `TRESTAssured` 
+is indeed an implementation of `IRESTAssuredSpec`.
+
+#### IRESTAssuredSpec
+
+```pascal
+function Url(Value: String): IRESTAssuredSpec;
+function WithBody(Content: String): IRESTAssuredSpec;
+function WithContentType(Value: String): IRESTAssuredSpec;
+function WithResource(Value: String): IRESTAssuredSpec;
+function WithHeader(Key: String; Value: Variant): IRESTAssuredSpec;
+function WithParameter(Key: String; Value: Variant): IRESTAssuredSpec;
+function DoAfter(Runnable: TRunnable<IRESTResponse>): IRESTAssuredSpec;
+function DoBefore(Runnable: TRunnable<IRESTRequest>): IRESTAssuredSpec;
+function PerformRequest(Method: TRESTMethod): IRESTAssuredResponseSpec;
+```
+
+
+When you call `PerformRequest(TRESTMethod)` you will get a new specification path that implements 
+`IRESTAssuredResponseSpec` which represents a specification for testing against HTTP responses.
+
+#### IRESTAssuredResponseSpec
+
+```pascal
+function BodyAsJson(): IRESTAssuredJSONSpec;
+function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
+function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
+```
+
+> Note how `BodyAsJson` returns  an `IRESTAssuredJSONSpec` which is a specification for testing against `TJSONValue` object.
+</details>
+
+<details>
+<summary>6. Types of Assertations and Specification <i>(example)</i></summary>
+
+### Types of Assertations
+
+RESTAssured provide a set of ways and functions to test your code. 
+You can either use static functions (with `TRESTAssuredAssert`) or assertations for that (using a test spec interface).
+
+### Static functions
+
+Here is a simple test with static function.
+
+```pascal
+TRESTAssuredAssert.AreEqual<String>({{Expected String}}, {{Actual String}}, 'Your message');
+```
+
+### Specification interface (via TRESTAssuredSpecProvider)
+
+You don't have to use TRESTAssured, which will make an HTTP request. If you already have an object that 
+can be handled by the framework, you can use a specification provider instead.
+
+```pascal
+procedure TMyTestObject.JsonObjectTest;
+var
+  lJSONObject: TJSONObject;
+begin
+  lJSONObject := TJSONObject.Create();
+
+  lJSONObject.AddPair('hello', 'world');
+  lJSONObject.AddPair('age', 22);
+
+  TRESTAssuredSpecProvider.Against(lJSONObject)
+      .AssertThat('hello', 'world')
+      .AssertGreaterThan('age', 18);
+end;
+```
+
+### Specification interface (via TRESTAssured)
+
+To get a specification interface with `TRESTAssured`, you must first perform an HTTP request.
+
+```pascal
+procedure TMyTestObject.CalculatorTest;
+begin
+  TRESTAssured.Start()
+      .WithResource('/calculator')
+      .WithParameter('x', 10)
+      .WithParameter('y', 15)
+      .WithParameter('operator', 'plus')
+      .PerformRequest(TRESTMethod.GET)
+      .StatusCodeIs(200)
+      .BodyAsJson()
+      .AssertLessThan('PlusResult', 26)
+      .AssertGreaterThan('PlusResult', 24);
+end;
+```
+
+### Error Handling
+
+If any errors occur during the assertion phase, RESTAssured should display a helpful
+message indicating where the problem occurred and what it is.
+
+```pascal
+      .PerformRequest(TRESTMethod.GET)
+      .StatusCodeIs(200)
+      .BodyAsJson()
+          .AssertLessThan('PlusResultNOTAVALIDFIELD', 26)
+          .AssertGreaterThan('PlusResultNOTAVALIDFIELD', 24);
+```
+
+```cmd
+Tests With Errors
+  Test.TMyTestObject.CalculatorTest
+  Message: At AssertGreaterThan('PlusResultNOTAVALIDFIELD', '26') -> Field "PlusResultNOTAVALIDFIELD" does not exist.
+```
+
+</details>
 
 
 
