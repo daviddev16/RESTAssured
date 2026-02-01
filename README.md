@@ -1,4 +1,4 @@
-## RESTAssured
+## 🛡 RESTAssured
 
 RESTAssured is a minimalist framework that allows you to create API integration tests within DUnit test procedures.
 
@@ -7,7 +7,7 @@ RESTAssured is a minimalist framework that allows you to create API integration 
 
 
 <details>
-<summary>1. First Integration Test <i>(example)</i></summary>
+<summary>👣 First Integration Test <i>(example)</i></summary>
 
 ### First Integration Test
 
@@ -52,7 +52,7 @@ end;
 </details>
 
 <details>
-<summary>2. Test Fixture With Default Settings <i>(example)</i></summary>
+<summary>🌎 Test Fixture With Default Settings <i>(example)</i></summary>
 
 ### Test Fixture With Default Settings
 
@@ -86,7 +86,7 @@ end;
 </details>
 
 <details>
-<summary>3. Custom Status Code Validation <i>(example)</i></summary>
+<summary>🌿 Custom Status Code Validation <i>(example)</i></summary>
 
 ### Custom Status Code Validation
 
@@ -120,7 +120,7 @@ end;
 </details>
 
 <details>
-<summary>4. Before / After Event Trigger <i>(example)</i></summary>
+<summary>📞 Before / After Event Trigger <i>(example)</i></summary>
 
 ### Before / After Event Trigger
 
@@ -171,7 +171,7 @@ end;
 </details>
 
 <details>
-<summary>4. Custom HTTP Client <i>(example)</i></summary>
+<summary>📜 Custom HTTP Client <i>(example)</i></summary>
 
 ### Custom HTTP Client
 
@@ -216,7 +216,7 @@ end;
 </details>
 
 <details>
-<summary>5. Specification model <i>(example)</i></summary>
+<summary>📒 Specification model <i>(example)</i></summary>
 
 ### Specification model
 
@@ -254,12 +254,12 @@ function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec;
 </details>
 
 <details>
-<summary>6. Types of Assertations and Specification <i>(example)</i></summary>
+<summary>🛠 Types of Assertations and Specification <i>(example)</i></summary>
 
 ### Types of Assertations
 
 RESTAssured provide a set of ways and functions to test your code. 
-You can either use static functions (with `TRESTAssuredAssert`) or assertations for that (using a test spec interface).
+You can either use static functions (with `TRESTAssuredAssert`) or spec assertation (using a test spec interface).
 
 ### Static functions
 
@@ -271,7 +271,7 @@ TRESTAssuredAssert.AreEqual<String>({{Expected String}}, {{Actual String}}, 'You
 
 ### Specification interface (via TRESTAssuredSpecProvider)
 
-You don't have to use TRESTAssured, which will make an HTTP request. If you already have an object that 
+You don't have to use `TRESTAssured`, which require making an HTTP request. If you already have an object that 
 can be handled by the framework, you can use a specification provider instead.
 
 ```pascal
