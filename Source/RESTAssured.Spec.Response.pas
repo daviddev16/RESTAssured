@@ -6,6 +6,7 @@ uses
   System.SysUtils,
   RESTAssured.Utils,
   RESTAssured.Assert,
+  RESTAssured.Types,
   RESTAssured.Spec.JSON,
   RESTAssured.Intf.RESTClient,
   RESTAssured.Default.RESTClient,
@@ -25,6 +26,7 @@ type
       function BodyAsJson(): IRESTAssuredJSONSpec;
       function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
       function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
+      function GroupSeparator(GroupName: String): IRESTAssuredResponseSpec;
     public
       constructor Create(RESTResponse: IRESTResponse);
       destructor Destroy(); override;
@@ -34,6 +36,7 @@ implementation
 
 uses
   System.JSON,
+  RESTAssured.Spec.Provider,
   RESTAssured.Utils.ErrorHandling;
 
 { TRESTAssuredResponseSpec }
@@ -75,13 +78,18 @@ begin
     on Ex: Exception do
       TRESTAssuredErrorHandler.Handle('BodyAsJson', [lBody], Ex);
   end;
-  Result := TRESTAssuredJSONSpec.Create(lJSONValue);
+  Result := TRESTAssuredSpecProvider.Against(lJSONValue);
 end;
 
 destructor TRESTAssuredResponseSpec.Destroy;
 begin
   FRESTResponse := nil;
   inherited;
+end;
+
+function TRESTAssuredResponseSpec.GroupSeparator;
+begin
+  Result := Self;
 end;
 
 end.

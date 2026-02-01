@@ -14,8 +14,9 @@ uses
   RESTAssured.Settings,
   RESTAssured.Intf.RESTClient,
   RESTAssured.Default.RESTClient,
+  RESTAssured.Utils.ErrorHandling,
   RESTAssured.Spec.Response,
-  RESTAssured.Utils.ErrorHandling;
+  RESTAssured.Spec.Provider;
 
 type
   TRESTMethod = RESTAssured.Intf.RESTClient.TRESTMethod;
@@ -23,6 +24,8 @@ type
   TRESTContentType = RESTAssured.Intf.RESTClient.TRESTContentType;
   IRESTRequest = RESTAssured.Intf.RESTClient.IRESTRequest;
   IRESTResponse = RESTAssured.Intf.RESTClient.IRESTResponse;
+  TRESTAssuredAssert = RESTAssured.Assert.TRESTAssuredAssert;
+  TRESTAssuredSpecProvider = RESTAssured.Spec.Provider.TRESTAssuredSpecProvider;
 
   IRESTAssuredSpec = interface
     function Url(Value: String): IRESTAssuredSpec;
@@ -199,7 +202,7 @@ begin
       lRESTResponse := FRESTClient.PerformRequest(FRESTRequest);
       Assert(lRESTResponse <> nil);
 
-      Result := TRESTAssuredResponseSpec.Create(lRESTResponse);
+      Result := TRESTAssuredSpecProvider.Against(lRESTResponse);
     except
       on Ex: Exception do
       begin
