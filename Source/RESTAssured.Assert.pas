@@ -14,11 +14,12 @@ type
     public
       class function Make<X>(Value: TValue): X; overload;
       class function Make<X, Y>(Value: X): Y; overload;
-      class procedure Fail(Message: String; Args: Array of Const);
       class procedure AreEqual<T>(Expected, Actual: T; Message: String);
       class procedure IsGreaterThan<T>(GreaterValue, Actual: T; Message: String);
       class procedure IsLessThan<T>(LesserValue, Actual: T; Message: String);
       class procedure IsEmpty(Value: String; Message: String);
+      class procedure IsNotEmpty(Value: String; Message: String);
+      class procedure Fail(Message: String; Arguments: Array Of Const);
     end;
 
 const
@@ -41,21 +42,19 @@ var
   lExpectedValue, lActualValue: TValue;
 begin
   lComparer := TComparer<T>.Default;
-  if lComparer.Compare(Expected, Actual) <> 0 then
-  begin
-    lActualValue := TValue.From<T>(Actual);
-    lExpectedValue := TValue.From<T>(Expected);
 
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_ACTUAL,
-                                         lActualValue.ToString());
+  lActualValue := TValue.From<T>(Actual);
+  lExpectedValue := TValue.From<T>(Expected);
 
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_EXPECTED,
-                                         lExpectedValue.ToString());
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_ACTUAL,
+                                       lActualValue.ToString());
 
-    Fail(Message, []);
-  end;
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_EXPECTED,
+                                       lExpectedValue.ToString());
+
+  Assert.IsTrue((lComparer.Compare(Expected, Actual) = 0), Message);
 end;
 
 class procedure TRESTAssuredAssert.IsGreaterThan<T>;
@@ -75,19 +74,15 @@ begin
   else if lActualValue.Kind = tkFloat then
     lIsGreaterThan := Make<Double>(lActualValue) > Make<Double>(lGreaterValue);
 
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_ACTUAL,
+                                       lActualValue.ToString());
 
-  if not lIsGreaterThan then
-  begin
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_ACTUAL,
-                                         lActualValue.ToString());
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_GREATER,
+                                       lGreaterValue.ToString());
 
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_GREATER,
-                                         lGreaterValue.ToString());
-
-    Fail(Message, []);
-  end;
+  Assert.IsTrue(lIsGreaterThan, Message);
 end;
 
 class procedure TRESTAssuredAssert.IsLessThan<T>;
@@ -107,31 +102,33 @@ begin
   else if lActualValue.Kind = tkFloat then
     lIsLessThan := Make<Double>(lActualValue) < Make<Double>(lLesserValue);
 
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_ACTUAL,
+                                       lActualValue.ToString());
 
-  if not lIsLessThan then
-  begin
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_ACTUAL,
-                                         lActualValue.ToString());
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_LESSER,
+                                       lLesserValue.ToString());
 
-    Message := TRESTAssuredUtils.Replace(Message,
-                                         PLACEHOLDER_LESSER,
-                                         lLesserValue.ToString());
-
-    Fail(Message, []);
-  end;
+  Assert.IsTrue(lIsLessThan, Message);
 end;
 
 class procedure TRESTAssuredAssert.IsEmpty;
 begin
-  if Value.IsEmpty() then
-    Exit;
-
   Message := TRESTAssuredUtils.Replace(Message,
                                        PLACEHOLDER_VALUE,
                                        Value);
 
-  Fail(Message, []);
+  Assert.IsEmpty(Value, Message);
+end;
+
+class procedure TRESTAssuredAssert.IsNotEmpty;
+begin
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_VALUE,
+                                       Value);
+
+  Assert.IsNotEmpty(Value, Message);
 end;
 
 class function TRESTAssuredAssert.Make<X, Y>(Value: X): Y;
@@ -146,8 +143,7 @@ end;
 
 class procedure TRESTAssuredAssert.Fail;
 begin
-  Assert.FailFmt(Message, Args, ReturnAddress);
+  Assert.Fail(Format(Message, Arguments), ReturnAddress);
 end;
-
 
 end.

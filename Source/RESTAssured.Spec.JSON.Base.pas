@@ -115,6 +115,7 @@ end;
 
 procedure TTRESTAssuredJSONBaseSpec.AssertNotEmptyInternal;
 var
+  lValue: String;
   lJSONValue: TJSONValue;
 begin
   try
@@ -126,6 +127,8 @@ begin
         'Field "%s" must be a JSONString.',
         [FieldName]);
     end;
+
+    lValue := TJSONString(lJSONValue).Value;
   except
     on Ex: Exception do
       TRESTAssuredErrorHandler.Handle(
@@ -133,9 +136,9 @@ begin
           [FieldName], Ex);
   end;
 
-  if String.IsNullOrEmpty(TJSONString(lJSONValue).Value) then
-    TRESTAssuredAssert.Fail(
-      'Field "%s" must not be empty.', [FieldName]);
+  TRESTAssuredAssert.IsNotEmpty(
+      lValue,
+      Format('Field "%s" must not be empty.', [FieldName]));
 end;
 
 function TTRESTAssuredJSONBaseSpec.FindJSONValue(
