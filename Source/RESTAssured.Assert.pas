@@ -18,9 +18,11 @@ type
       class procedure AreEqual<T>(Expected, Actual: T; Message: String);
       class procedure IsGreaterThan<T>(GreaterValue, Actual: T; Message: String);
       class procedure IsLessThan<T>(LesserValue, Actual: T; Message: String);
+      class procedure IsEmpty(Value: String; Message: String);
     end;
 
 const
+  PLACEHOLDER_VALUE    = '{{VALUE}}';
   PLACEHOLDER_ACTUAL   = '{{ACTUAL}}';
   PLACEHOLDER_GREATER  = '{{GREATER}}';
   PLACEHOLDER_LESSER   = '{{LESSER}}';
@@ -120,6 +122,17 @@ begin
   end;
 end;
 
+class procedure TRESTAssuredAssert.IsEmpty;
+begin
+  if Value.IsEmpty() then
+    Exit;
+
+  Message := TRESTAssuredUtils.Replace(Message,
+                                       PLACEHOLDER_VALUE,
+                                       Value);
+
+  Fail(Message, []);
+end;
 
 class function TRESTAssuredAssert.Make<X, Y>(Value: X): Y;
 begin

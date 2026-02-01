@@ -15,6 +15,7 @@ uses
 type
   IRESTAssuredResponseSpec = interface
     function BodyAsJson(): IRESTAssuredJSONSpec;
+    function Bodyless(): IRESTAssuredResponseSpec;
     function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
     function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
   end;
@@ -24,6 +25,7 @@ type
       FRESTResponse: IRESTResponse;
     public
       function BodyAsJson(): IRESTAssuredJSONSpec;
+      function Bodyless(): IRESTAssuredResponseSpec;
       function StatusCodeIs(Expected: Integer): IRESTAssuredResponseSpec; overload;
       function StatusCodeIs(Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec; overload;
       function GroupSeparator(GroupName: String): IRESTAssuredResponseSpec;
@@ -49,21 +51,19 @@ end;
 function TRESTAssuredResponseSpec.StatusCodeIs(
   Expected: Integer): IRESTAssuredResponseSpec;
 begin
+  Result := Self;
   TRESTAssuredAssert.AreEqual<Integer>(
       Expected,
       FRESTResponse.GetStatus(),
       'Status Code expected to be {{EXPECTED}} but got {{ACTUAL}}.');
-
-  Result := Self;
 end;
 
 function TRESTAssuredResponseSpec.StatusCodeIs(
   Predicate: TPredicate<Integer>): IRESTAssuredResponseSpec;
 begin
+  Result := Self;
   if not Predicate(FRESTResponse.GetStatus()) then
     TRESTAssuredAssert.Fail('Predicate failed.', []);
-
-  Result := Self;
 end;
 
 function TRESTAssuredResponseSpec.BodyAsJson;
@@ -79,6 +79,14 @@ begin
       TRESTAssuredErrorHandler.Handle('BodyAsJson', [lBody], Ex);
   end;
   Result := TRESTAssuredSpecProvider.Against(lJSONValue);
+end;
+
+function TRESTAssuredResponseSpec.Bodyless;
+begin
+  Result := Self;
+  TRESTAssuredAssert.IsEmpty(
+      FRESTResponse.GetBody(),
+      'Body expected to be empty but got {{VALUE}}.');
 end;
 
 destructor TRESTAssuredResponseSpec.Destroy;

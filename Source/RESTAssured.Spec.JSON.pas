@@ -13,8 +13,10 @@ type
   IRESTAssuredJSONSpec = interface
     function AssertNotEmpty(FieldName: String): IRESTAssuredJSONSpec;
     function AssertThat(FieldName: String; Expected: String): IRESTAssuredJSONSpec; overload;
+    function AssertThat(FieldName: String; Expected: Boolean): IRESTAssuredJSONSpec; overload;
     function AssertThat(FieldName: String; Expected: Integer): IRESTAssuredJSONSpec; overload;
     function AssertThat(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
+    function AssertDateTime(FieldName: String; Expected: TDateTime): IRESTAssuredJSONSpec; overload;
     function AssertGreaterThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
     function AssertLessThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
   end;
@@ -22,10 +24,12 @@ type
   TRESTAssuredJSONSpec = class(TTRESTAssuredJSONBaseSpec, IRESTAssuredJSONSpec)
     public
       function AssertNotEmpty(FieldName: String): IRESTAssuredJSONSpec;
-      function AssertThat(FieldName: String; Expected: String): IRESTAssuredJSONSpec; overload;
       function AssertThat<T>(FieldName: String; Expected: T): IRESTAssuredJSONSpec; overload;
+      function AssertThat(FieldName: String; Expected: String): IRESTAssuredJSONSpec; overload;
+      function AssertThat(FieldName: String; Expected: Boolean): IRESTAssuredJSONSpec; overload;
       function AssertThat(FieldName: String; Expected: Integer): IRESTAssuredJSONSpec; overload;
       function AssertThat(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
+      function AssertDateTime(FieldName: String; Expected: TDateTime): IRESTAssuredJSONSpec; overload;
       function AssertGreaterThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
       function AssertLessThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
   end;
@@ -72,6 +76,14 @@ end;
 
 function TRESTAssuredJSONSpec.AssertThat(
   FieldName: String;
+  Expected: Boolean): IRESTAssuredJSONSpec;
+begin
+  Result := Self;
+  AssertThatInternal<Boolean>(FieldName, Expected);
+end;
+
+function TRESTAssuredJSONSpec.AssertThat(
+  FieldName: String;
   Expected: Integer): IRESTAssuredJSONSpec;
 begin
   Result := Self;
@@ -84,6 +96,14 @@ function TRESTAssuredJSONSpec.AssertThat(
 begin
   Result := Self;
   AssertThatInternal<Double>(FieldName, Expected);
+end;
+
+function TRESTAssuredJSONSpec.AssertDateTime(
+  FieldName: String;
+  Expected: TDateTime): IRESTAssuredJSONSpec;
+begin
+  Result := Self;
+  AssertThatInternal<TDateTime>(FieldName, Expected);
 end;
 
 function TRESTAssuredJSONSpec.AssertNotEmpty(
