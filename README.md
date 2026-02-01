@@ -271,7 +271,7 @@ TRESTAssuredAssert.AreEqual<String>({{Expected String}}, {{Actual String}}, 'You
 
 ### Specification interface (via TRESTAssuredSpecProvider)
 
-You don't have to use TRESTAssured, which will make an HTTP request. If you already have an object that 
+You don't have to use `TRESTAssured`, which require making an HTTP request. If you already have an object that 
 can be handled by the framework, you can use a specification provider instead.
 
 ```pascal
