@@ -69,7 +69,7 @@ begin
     lIsGreaterThan := Make<Integer>(lActualValue) > Make<Integer>(lGreaterValue)
 
   else if lActualValue.Kind = tkInt64 then
-    lIsGreaterThan := Make<Integer>(lActualValue) > Make<Integer>(lGreaterValue)
+    lIsGreaterThan := Make<Int64>(lActualValue) > Make<Int64>(lGreaterValue)
 
   else if lActualValue.Kind = tkFloat then
     lIsGreaterThan := Make<Double>(lActualValue) > Make<Double>(lGreaterValue);
@@ -97,7 +97,7 @@ begin
     lIsLessThan := Make<Integer>(lActualValue) < Make<Integer>(lLesserValue)
 
   else if lActualValue.Kind = tkInt64 then
-    lIsLessThan := Make<Integer>(lActualValue) < Make<Integer>(lLesserValue)
+    lIsLessThan := Make<Int64>(lActualValue) < Make<Int64>(lLesserValue)
 
   else if lActualValue.Kind = tkFloat then
     lIsLessThan := Make<Double>(lActualValue) < Make<Double>(lLesserValue);

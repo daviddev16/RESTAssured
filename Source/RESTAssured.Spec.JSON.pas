@@ -11,6 +11,7 @@ uses
 
 type
   IRESTAssuredJSONSpec = interface
+    function AssertIsEmpty(FieldName: string): IRESTAssuredJSONSpec;
     function AssertNotEmpty(FieldName: String): IRESTAssuredJSONSpec;
     function AssertThat(FieldName: String; Expected: String): IRESTAssuredJSONSpec; overload;
     function AssertThat(FieldName: String; Expected: Boolean): IRESTAssuredJSONSpec; overload;
@@ -23,6 +24,7 @@ type
 
   TRESTAssuredJSONSpec = class(TTRESTAssuredJSONBaseSpec, IRESTAssuredJSONSpec)
     public
+      function AssertIsEmpty(FieldName: string): IRESTAssuredJSONSpec;
       function AssertNotEmpty(FieldName: String): IRESTAssuredJSONSpec;
       function AssertThat<T>(FieldName: String; Expected: T): IRESTAssuredJSONSpec; overload;
       function AssertThat(FieldName: String; Expected: String): IRESTAssuredJSONSpec; overload;
@@ -32,7 +34,7 @@ type
       function AssertDateTime(FieldName: String; Expected: TDateTime): IRESTAssuredJSONSpec; overload;
       function AssertGreaterThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
       function AssertLessThan(FieldName: String; Expected: Double): IRESTAssuredJSONSpec; overload;
-  end;
+    end;
 
 implementation
 
@@ -111,6 +113,13 @@ function TRESTAssuredJSONSpec.AssertNotEmpty(
 begin
   Result := Self;
   AssertNotEmptyInternal(FieldName);
+end;
+
+function TRESTAssuredJSONSpec.AssertIsEmpty(
+  FieldName: string): IRESTAssuredJSONSpec;
+begin
+  Result := Self;
+  AssertIsEmptyInternal(FieldName);
 end;
 
 end.

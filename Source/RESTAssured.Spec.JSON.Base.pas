@@ -9,21 +9,23 @@ type
   TTRESTAssuredJSONBaseSpec = class abstract(TInterfacedObject)
     strict private
       FJSONValue: TJSONValue;
-    private
-      const
-        ASSERT_THAT_UNSUPPORTED_KINDS: Set Of TTypeKind =
-          [tkUnknown,   tkRecord,    tkClass,
-           tkClassRef,  tkInterface, tkPointer,
-           tkProcedure, tkMethod,    tkMRecord];
+      FOwnJSONValue: Boolean;
+    private const
+      ASSERT_THAT_UNSUPPORTED_KINDS: Set Of TTypeKind =
+        [tkUnknown,   tkRecord,    tkClass,
+         tkClassRef,  tkInterface, tkPointer,
+         tkProcedure, tkMethod,    tkMRecord];
     protected
       procedure AssertThatCheckSupportedType<T>();
       procedure AssertThatInternal<T>(FieldName: String; Expected: T);
       procedure AssertGreaterThanInternal<T>(FieldName: String; Value: T);
       procedure AssertLessThanInternal<T>(FieldName: String; Value: T);
       procedure AssertNotEmptyInternal(FieldName: String);
+      procedure AssertIsEmptyInternal(FieldName: string);
       function FindJSONValue(FieldName: String): TJSONValue;
+      function FindAsJSONString(FieldName: string): String;
     public
-      constructor Create(JSONValue: TJSONValue);
+      constructor Create(JSONValue: TJSONValue; OwnJSONValue: Boolean = True);
       destructor Destroy(); override;
     end;
 
@@ -36,9 +38,12 @@ uses
   RESTAssured.Assert,
   RESTAssured.Utils.ErrorHandling;
 
-constructor TTRESTAssuredJSONBaseSpec.Create(JSONValue: TJSONValue);
+constructor TTRESTAssuredJSONBaseSpec.Create(
+  JSONValue: TJSONValue;
+  OwnJSONValue: Boolean);
 begin
   FJSONValue := JSONValue;
+  FOwnJSONValue := OwnJSONValue;
 end;
 
 procedure TTRESTAssuredJSONBaseSpec.AssertLessThanInternal<T>;
@@ -113,22 +118,30 @@ begin
              [FieldName]));
 end;
 
+procedure TTRESTAssuredJSONBaseSpec.AssertIsEmptyInternal;
+var
+  lValue: String;
+begin
+  try
+    lValue := FindAsJSONString(FieldName);
+  except
+    on Ex: Exception do
+      TRESTAssuredErrorHandler.Handle(
+          'AssertIsEmpty',
+          [FieldName], Ex);
+  end;
+
+  TRESTAssuredAssert.IsEmpty(
+      lValue,
+      Format('Field "%s" must be empty.', [FieldName]));
+end;
+
 procedure TTRESTAssuredJSONBaseSpec.AssertNotEmptyInternal;
 var
   lValue: String;
-  lJSONValue: TJSONValue;
 begin
   try
-    lJSONValue := FindJSONValue(FieldName);
-
-    if not (lJSONValue is TJSONString) then
-    begin
-      raise ERESTAssuredException.CreateFmt(
-        'Field "%s" must be a JSONString.',
-        [FieldName]);
-    end;
-
-    lValue := TJSONString(lJSONValue).Value;
+    lValue := FindAsJSONString(FieldName);
   except
     on Ex: Exception do
       TRESTAssuredErrorHandler.Handle(
@@ -141,8 +154,23 @@ begin
       Format('Field "%s" must not be empty.', [FieldName]));
 end;
 
-function TTRESTAssuredJSONBaseSpec.FindJSONValue(
-  FieldName: String): TJSONValue;
+function TTRESTAssuredJSONBaseSpec.FindAsJSONString;
+var
+  lJSONValue: TJSONValue;
+begin
+  lJSONValue := FindJSONValue(FieldName);
+
+  if not (lJSONValue is TJSONString) then
+  begin
+    raise ERESTAssuredException.CreateFmt(
+      'Field "%s" must be a JSONString.',
+      [FieldName]);
+  end;
+
+  Result := TJSONString(lJSONValue).Value;
+end;
+
+function TTRESTAssuredJSONBaseSpec.FindJSONValue;
 begin
   Result := FJSONValue.FindValue(FieldName);
   if not Assigned(Result) then
@@ -167,7 +195,8 @@ end;
 
 destructor TTRESTAssuredJSONBaseSpec.Destroy;
 begin
-  FJSONValue.Free();
+  if FOwnJSONValue then
+    FJSONValue.Free();
   inherited;
 end;
 
