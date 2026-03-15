@@ -93,7 +93,7 @@ implementation
 
 { TNativeRESTRequest }
 
-constructor TNativeRESTRequest.Create;
+constructor TNativeRESTRequest.Create();
 begin
   FHeaders := TStringList.Create();
   FParameters := TStringList.Create();
@@ -102,13 +102,15 @@ begin
   FContentType := '';
 end;
 
-procedure TNativeRESTRequest.SetResource;
+procedure TNativeRESTRequest.SetResource(Value: String);
 begin
   TRESTAssuredUtils.CheckNotEmpty(Value, 'Value');
   FResource := TRESTAssuredUtils.TrimPath(Value);
 end;
 
-procedure TNativeRESTRequest.SetHeader;
+procedure TNativeRESTRequest.SetHeader(
+  Key: String;
+  Value: Variant);
 begin
   TRESTAssuredUtils.CheckNotEmpty(Key, 'Key');
   TRESTAssuredUtils.CheckNotNull(Value, 'Value');
@@ -116,7 +118,9 @@ begin
   FHeaders.AddPair(Key, FVariantConversor.Convert(Value));
 end;
 
-procedure TNativeRESTRequest.SetParameter;
+procedure TNativeRESTRequest.SetParameter(
+  Key: String;
+  Value: Variant);
 begin
   TRESTAssuredUtils.CheckNotEmpty(Key, 'Key');
   TRESTAssuredUtils.CheckNotNull(Value, 'Value');
@@ -124,59 +128,62 @@ begin
   FParameters.AddPair(Key, FVariantConversor.Convert(Value));
 end;
 
-procedure TNativeRESTRequest.SetMethod;
+procedure TNativeRESTRequest.SetMethod(
+  Method: TRESTMethod);
 begin
   FMethod := Method;
 end;
 
-procedure TNativeRESTRequest.SetBody;
+procedure TNativeRESTRequest.SetBody(
+  Content: String);
 begin
   TRESTAssuredUtils.CheckNotNull(Content, 'Content');
   FBody := Content;
 end;
 
-procedure TNativeRESTRequest.SetContentType;
+procedure TNativeRESTRequest.SetContentType(
+  Value: String);
 begin
   TRESTAssuredUtils.CheckNotNull(Value, 'Value');
   FContentType := Value;
 end;
 
-function TNativeRESTRequest.GetResource;
+function TNativeRESTRequest.GetResource(): String;
 begin
   Result := FResource;
 end;
 
-function TNativeRESTRequest.GetHeaders;
+function TNativeRESTRequest.GetHeaders(): TStringList;
 begin
   Result := FHeaders;
 end;
 
-function TNativeRESTRequest.GetParameters;
+function TNativeRESTRequest.GetParameters(): TStringList;
 begin
   Result := FParameters;
 end;
 
-function TNativeRESTRequest.GetParameter;
+function TNativeRESTRequest.GetParameter(Key: String): String;
 begin
   Result := FParameters.Values[Key];
 end;
 
-function TNativeRESTRequest.GetBody;
+function TNativeRESTRequest.GetBody(): String;
 begin
   Result := FBody;
 end;
 
-function TNativeRESTRequest.GetContentType;
+function TNativeRESTRequest.GetContentType(): String;
 begin
   Result := FContentType;
 end;
 
-function TNativeRESTRequest.GetMethod;
+function TNativeRESTRequest.GetMethod(): TRESTMethod;
 begin
   Result := FMethod;
 end;
 
-destructor TNativeRESTRequest.Destroy;
+destructor TNativeRESTRequest.Destroy();
 begin
   FHeaders.Free();
   FParameters.Free();
@@ -186,38 +193,42 @@ end;
 
 { TNativeRESTResponse }
 
-constructor TNativeRESTResponse.Create;
+constructor TNativeRESTResponse.Create(
+  Body: String;
+  Status: Integer;
+  RESTRequest: IRESTRequest);
 begin
   FBody := Body;
   FStatus := Status;
   FRESTRequest := RESTRequest;
 end;
 
-function TNativeRESTResponse.GetBody;
+function TNativeRESTResponse.GetBody(): String;
 begin
   Result := FBody;
 end;
 
-function TNativeRESTResponse.GetRESTRequest;
+function TNativeRESTResponse.GetRESTRequest(): IRESTRequest;
 begin
   Result := FRESTRequest;
 end;
 
-function TNativeRESTResponse.GetStatus;
+function TNativeRESTResponse.GetStatus(): Integer;
 begin
   Result := FStatus;
 end;
 
 { TNativeRESTClient }
 
-constructor TNativeRESTClient.Create;
+constructor TNativeRESTClient.Create();
 begin
   FClient := TRESTClient.Create(nil);
   FClient.RaiseExceptionOn500 := False;
 end;
 
-function TNativeRESTClient.PerformRequest;
-var { Native stuff }
+function TNativeRESTClient.PerformRequest(
+  RESTRequest: IRESTRequest): IRESTResponse;
+var
   lRequest: TRESTRequest;
   lResponse: TRESTResponse;
   lMessage: String;
@@ -265,7 +276,10 @@ begin
   end;
 end;
 
-procedure TNativeRESTClient.FillParameter;
+procedure TNativeRESTClient.FillParameter(
+  Request: TRESTRequest;
+  Pairs: TStringList;
+  Kind: TRESTRequestParameterKind);
 var
   lKey, lValue: String;
 begin
@@ -277,7 +291,9 @@ begin
   end;
 end;
 
-procedure TNativeRESTClient.FillMethod;
+procedure TNativeRESTClient.FillMethod(
+  Request: TRESTRequest;
+  Method: TRESTMethod);
 begin
   case Method of
     TRESTMethod.GET:    Request.Method := rmGET;
@@ -287,23 +303,23 @@ begin
   end;
 end;
 
-function TNativeRESTClient.NewRequest;
+function TNativeRESTClient.NewRequest(): IRESTRequest;
 begin
   Result := TNativeRESTRequest.Create();
 end;
 
-procedure TNativeRESTClient.SetUrl;
+procedure TNativeRESTClient.SetUrl(Value: String);
 begin
   TRESTAssuredUtils.CheckNotEmpty(Value, 'Value');
   FUrl := Value;
 end;
 
-function TNativeRESTClient.GetUrl: String;
+function TNativeRESTClient.GetUrl(): String;
 begin
   Result := FUrl;
 end;
 
-destructor TNativeRESTClient.Destroy;
+destructor TNativeRESTClient.Destroy();
 begin
   FClient := nil;
   inherited;
@@ -311,7 +327,7 @@ end;
 
 { TNativeRESTClientFactory }
 
-function TNativeRESTClientFactory.NewRESTClient;
+function TNativeRESTClientFactory.NewRESTClient(): IRESTClient;
 begin
   Result := TNativeRESTClient.Create();
 end;

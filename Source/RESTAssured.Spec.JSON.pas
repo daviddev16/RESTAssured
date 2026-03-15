@@ -48,78 +48,78 @@ function TRESTAssuredJSONSpec.AssertThat<T>(
   FieldName: String;
   Expected: T): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<T>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertGreaterThan(
   FieldName: String;
   Expected: Double): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertGreaterThanInternal<Double>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertLessThan(
   FieldName: String;
   Expected: Double): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertLessThanInternal<Double>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertThat(
   FieldName: String;
   Expected: String): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<String>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertThat(
   FieldName: String;
   Expected: Boolean): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<Boolean>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertThat(
   FieldName: String;
   Expected: Integer): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<Integer>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertThat(
   FieldName: String;
   Expected: Double): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<Double>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertDateTime(
   FieldName: String;
   Expected: TDateTime): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertThatInternal<TDateTime>(FieldName, Expected);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertNotEmpty(
   FieldName: String): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertNotEmptyInternal(FieldName);
+  Result := Self;
 end;
 
 function TRESTAssuredJSONSpec.AssertIsEmpty(
   FieldName: string): IRESTAssuredJSONSpec;
 begin
-  Result := Self;
   AssertIsEmptyInternal(FieldName);
+  Result := Self;
 end;
 
 end.

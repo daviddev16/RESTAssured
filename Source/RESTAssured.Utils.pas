@@ -9,7 +9,12 @@ uses
 type
   ECheckerException = class(Exception);
 
-  TPredicate<T> = reference to function(Value: T): Boolean;
+  TPredicateResult = record
+    Success: Boolean;
+    AssertationMessage: String;
+  end;
+
+  TPredicate<T> = reference to function(Value: T): TPredicateResult;
 
   TVariantConversor = class
     public
@@ -31,7 +36,9 @@ implementation
 
 { TRESTAssuredUtils }
 
-class procedure TRESTAssuredUtils.CheckNotEmpty;
+class procedure TRESTAssuredUtils.CheckNotEmpty(
+  Content: String;
+  Name: String);
 begin
   if not String.IsNullOrWhiteSpace(Content) then
     Exit;
@@ -45,12 +52,16 @@ begin
       Exit(Arguments[I]);
 end;
 
-class function TRESTAssuredUtils.Replace;
+class function TRESTAssuredUtils.Replace(
+  Content,
+  FromStr,
+  ToStr: String): String;
 begin
   Result := StringReplace(Content, FromStr, ToStr, [rfReplaceAll]);
 end;
 
-class function TRESTAssuredUtils.TrimPath;
+class function TRESTAssuredUtils.TrimPath(
+  Path: String): String;
 begin
   Result := Path.Trim(['/','\', ' ']);
 end;
@@ -84,7 +95,7 @@ end;
 
 { TVariantConversor }
 
-function TVariantConversor.Convert;
+function TVariantConversor.Convert(Value: Variant): String;
 begin
   Result := VarToStr(Value);
 end;

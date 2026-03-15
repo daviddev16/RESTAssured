@@ -17,7 +17,7 @@ implementation
 
 { TRunnableEventHandler<D> }
 
-procedure TRunnableEventHandler<D>.TriggerOn;
+procedure TRunnableEventHandler<D>.TriggerOn(Data: D);
 var
   lRunnable: TRunnable<D>;
 begin

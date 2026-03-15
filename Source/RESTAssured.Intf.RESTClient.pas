@@ -11,6 +11,11 @@ type
   TRESTMethod = (GET, POST, PUT, DELETE);
   {$SCOPEDENUMS OFF}
 
+  TRESTMethodHelper = record helper for TRESTMethod
+    public
+      function AsString(): String;
+    end;
+
   TRESTContentType = class sealed
     const
       APPLICATION_JSON = REST.Types.CONTENTTYPE_APPLICATION_JSON;
@@ -55,5 +60,15 @@ type
   end;
 
 implementation
+
+uses
+  RESTAssured.Miscs;
+
+{ TRESTMethodHelper }
+
+function TRESTMethodHelper.AsString(): String;
+begin
+  Result := TGenericHelper.EnumToString<TRESTMethod>(Self);
+end;
 
 end.

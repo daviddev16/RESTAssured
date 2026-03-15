@@ -43,27 +43,31 @@ begin
   FRESTClientFactory := TNativeRESTClientFactory.Create();
 end;
 
-class procedure TRESTAssuredSettings.SetDefaultUrl;
+class procedure TRESTAssuredSettings.SetDefaultUrl(Value: String);
 begin
   FDefaultUrl := Value;
 end;
 
-class procedure TRESTAssuredSettings.SetDefaultContentType;
+class procedure TRESTAssuredSettings.SetDefaultContentType(
+  Value: String);
 begin
   FDefaultContentType := Value;
 end;
 
-class procedure TRESTAssuredSettings.SetRESTClientFactory;
+class procedure TRESTAssuredSettings.SetRESTClientFactory(
+  Value: IRESTClientFactory);
 begin
   FRESTClientFactory := Value;
 end;
 
-class function TRESTAssuredSettings.GetRESTClientFactory;
+class function TRESTAssuredSettings.GetRESTClientFactory(): IRESTClientFactory;
 begin
   Result := FRESTClientFactory;
 end;
 
-class procedure TRESTAssuredSettings.AddDefaultHeader;
+class procedure TRESTAssuredSettings.AddDefaultHeader(
+  Key: String;
+  Value: Variant);
 var
   lVariantConversor: TVariantConversor;
 begin
@@ -75,28 +79,28 @@ begin
   end;
 end;
 
-class function TRESTAssuredSettings.GetDefaultHeaders;
+class function TRESTAssuredSettings.GetDefaultHeaders(): TStringList;
 begin
   Result := FDefaultHeaders;
 end;
 
-class function TRESTAssuredSettings.GetDefaultContentType;
+class function TRESTAssuredSettings.GetDefaultContentType(): string;
 begin
   Result := FDefaultContentType;
 end;
 
-class function TRESTAssuredSettings.GetDefaultUrl;
+class function TRESTAssuredSettings.GetDefaultUrl(): String;
 begin
   Result := FDefaultUrl;
 end;
 
-class procedure TRESTAssuredSettings.Clear;
+class procedure TRESTAssuredSettings.Clear();
 begin
   FDefaultUrl := '';
   FDefaultHeaders.Clear();
 end;
 
-class destructor TRESTAssuredSettings.Destroy;
+class destructor TRESTAssuredSettings.Destroy();
 begin
   FDefaultUrl := '';
   FreeAndNil(FDefaultHeaders);

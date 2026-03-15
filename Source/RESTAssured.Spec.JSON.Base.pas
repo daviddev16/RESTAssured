@@ -11,12 +11,7 @@ type
       FJSONValue: TJSONValue;
       FOwnJSONValue: Boolean;
     private const
-      ASSERT_THAT_UNSUPPORTED_KINDS: Set Of TTypeKind =
-        [tkUnknown,   tkRecord,    tkClass,
-         tkClassRef,  tkInterface, tkPointer,
-         tkProcedure, tkMethod,    tkMRecord];
     protected
-      procedure AssertThatCheckSupportedType<T>();
       procedure AssertThatInternal<T>(FieldName: String; Expected: T);
       procedure AssertGreaterThanInternal<T>(FieldName: String; Value: T);
       procedure AssertLessThanInternal<T>(FieldName: String; Value: T);
@@ -35,6 +30,7 @@ uses
   System.Rtti,
   System.TypInfo,
   System.SysUtils,
+  RESTAssured.Miscs,
   RESTAssured.Assert,
   RESTAssured.Utils.ErrorHandling;
 
@@ -46,115 +42,140 @@ begin
   FOwnJSONValue := OwnJSONValue;
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertLessThanInternal<T>;
+procedure TTRESTAssuredJSONBaseSpec.AssertLessThanInternal<T>(
+  FieldName: String;
+  Value: T);
+const
+  MESSAGE_FMT = 'Field "%s" expected to be less than "{{LESSER}}" (Actual "{{ACTUAL}}").';
 var
   lActual: T;
   lJSONValue: TJSONValue;
-  lExpectedTValue: TValue;
+  lMessage: TRESTAssuredMessage;
 begin
-  lExpectedTValue := TValue.From<T>(Value);
+  lMessage := TRESTAssuredMessage
+      .New('AssertGreaterThan')
+      .Parameters([FieldName, TGenericHelper.Describe<T>(Value)])
+      .AssertationMessage(MESSAGE_FMT, [FieldName]);
+
   try
     lJSONValue := FindJSONValue(FieldName);
     lActual := lJSONValue.AsType<T>();
   except
     on Ex: Exception do
-      TRESTAssuredErrorHandler.Handle(
-          'AssertGreaterThan',
-          [FieldName, lExpectedTValue.ToString()], Ex);
+      TRESTAssuredErrorHandler.Handle(lMessage, Ex);
   end;
 
-  TRESTAssuredAssert.IsLessThan<T>(
-      Value,
-      lActual,
-      Format('Field "%s" expected to be less than {{LESSER}}.', [FieldName]));
+  TRESTAssuredAssert.IsLessThan<T>(Value,
+                                   lActual,
+                                   lMessage.Build());
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertGreaterThanInternal<T>;
+procedure TTRESTAssuredJSONBaseSpec.AssertGreaterThanInternal<T>(
+  FieldName: String;
+  Value: T);
+const
+  MESSAGE_FMT = 'Field "%s" expected to be greater than "{{GREATER}}" (Actual "{{ACTUAL}}").';
 var
   lActual: T;
   lJSONValue: TJSONValue;
-  lExpectedTValue: TValue;
+  lMessage: TRESTAssuredMessage;
 begin
-  lExpectedTValue := TValue.From<T>(Value);
+  lMessage := TRESTAssuredMessage
+      .New('AssertGreaterThan')
+      .Parameters([FieldName, TGenericHelper.Describe<T>(Value)])
+      .AssertationMessage(MESSAGE_FMT, [FieldName]);
+
   try
     lJSONValue := FindJSONValue(FieldName);
     lActual := lJSONValue.AsType<T>();
   except
     on Ex: Exception do
-      TRESTAssuredErrorHandler.Handle(
-          'AssertGreaterThan',
-          [FieldName, lExpectedTValue.ToString()], Ex);
+      TRESTAssuredErrorHandler.Handle(lMessage, Ex);
   end;
 
-  TRESTAssuredAssert.IsGreaterThan<T>(
-      Value,
-      lActual,
-      Format('Field "%s" expected to be greater than {{GREATER}}.', [FieldName]));
+  TRESTAssuredAssert.IsGreaterThan<T>(Value,
+                                      lActual,
+                                      lMessage.Build());
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertThatInternal<T>;
+procedure TTRESTAssuredJSONBaseSpec.AssertThatInternal<T>(
+  FieldName: String;
+  Expected: T);
+const
+  MESSAGE_FMT = 'Field "%s" expected to be "{{EXPECTED}}" but it was "{{ACTUAL}}".';
 var
   lActual: T;
   lJSONValue: TJSONValue;
-  lExpectedTValue: TValue;
+  lMessage: TRESTAssuredMessage;
 begin
-  AssertThatCheckSupportedType<T>();
+  lMessage := TRESTAssuredMessage
+      .New('AssertThat')
+      .Parameters([FieldName, TGenericHelper.Describe<T>(Expected)])
+      .AssertationMessage(MESSAGE_FMT, [FieldName]);
 
-  lExpectedTValue := TValue.From<T>(Expected);
   try
     lJSONValue := FindJSONValue(FieldName);
     lActual := lJSONValue.AsType<T>();
   except
     on Ex: Exception do
-      TRESTAssuredErrorHandler.Handle(
-          'AssertThat',
-          [FieldName, lExpectedTValue.ToString()], Ex);
+      TRESTAssuredErrorHandler.Handle(lMessage, Ex);
   end;
 
-  TRESTAssuredAssert.AreEqual<T>(
-      Expected,
-      lActual,
-      Format('Field "%s" expected to be {{EXPECTED}} but it was {{ACTUAL}}.',
-             [FieldName]));
+  TRESTAssuredAssert.AreEqual<T>(Expected,
+                                 lActual,
+                                 lMessage.Build());
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertIsEmptyInternal;
+procedure TTRESTAssuredJSONBaseSpec.AssertIsEmptyInternal(
+  FieldName: string);
+const
+  MESSAGE_FMT = 'Field "%s" must be empty.';
 var
   lValue: String;
+  lMessage: TRESTAssuredMessage;
 begin
+  lMessage := TRESTAssuredMessage
+      .New('AssertIsEmpty')
+      .Parameters([FieldName])
+      .AssertationMessage(MESSAGE_FMT, [FieldName]);
+
   try
     lValue := FindAsJSONString(FieldName);
   except
     on Ex: Exception do
-      TRESTAssuredErrorHandler.Handle(
-          'AssertIsEmpty',
-          [FieldName], Ex);
+      TRESTAssuredErrorHandler.Handle(lMessage, Ex);
   end;
 
-  TRESTAssuredAssert.IsEmpty(
-      lValue,
-      Format('Field "%s" must be empty.', [FieldName]));
+  TRESTAssuredAssert.IsEmpty(lValue,
+                             lMessage.Build());
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertNotEmptyInternal;
+procedure TTRESTAssuredJSONBaseSpec.AssertNotEmptyInternal(
+  FieldName: String);
+const
+  MESSAGE_FMT = 'Field "%s" must not be empty.';
 var
   lValue: String;
+  lMessage: TRESTAssuredMessage;
 begin
+  lMessage := TRESTAssuredMessage
+      .New('AssertNotEmpty')
+      .Parameters([FieldName])
+      .AssertationMessage(MESSAGE_FMT, [FieldName]);
+
   try
     lValue := FindAsJSONString(FieldName);
   except
     on Ex: Exception do
-      TRESTAssuredErrorHandler.Handle(
-          'AssertNotEmpty',
-          [FieldName], Ex);
+      TRESTAssuredErrorHandler.Handle(lMessage, Ex);
   end;
 
-  TRESTAssuredAssert.IsNotEmpty(
-      lValue,
-      Format('Field "%s" must not be empty.', [FieldName]));
+  TRESTAssuredAssert.IsNotEmpty(lValue,
+                                lMessage.Build());
 end;
 
-function TTRESTAssuredJSONBaseSpec.FindAsJSONString;
+function TTRESTAssuredJSONBaseSpec.FindAsJSONString(
+  FieldName: string): String;
 var
   lJSONValue: TJSONValue;
 begin
@@ -170,7 +191,8 @@ begin
   Result := TJSONString(lJSONValue).Value;
 end;
 
-function TTRESTAssuredJSONBaseSpec.FindJSONValue;
+function TTRESTAssuredJSONBaseSpec.FindJSONValue(
+  FieldName: String): TJSONValue;
 begin
   Result := FJSONValue.FindValue(FieldName);
   if not Assigned(Result) then
@@ -180,20 +202,7 @@ begin
   end;
 end;
 
-procedure TTRESTAssuredJSONBaseSpec.AssertThatCheckSupportedType<T>;
-var
-  lTypeInfo: PTypeInfo;
-begin
-  lTypeInfo := PTypeInfo(TypeInfo(T));
-
-  if not (lTypeInfo^.Kind in ASSERT_THAT_UNSUPPORTED_KINDS) then
-    Exit;
-
-  raise ERESTAssuredException.CreateFmt(
-    'Unsupported type : %s.',[lTypeInfo^.Name]);
-end;
-
-destructor TTRESTAssuredJSONBaseSpec.Destroy;
+destructor TTRESTAssuredJSONBaseSpec.Destroy();
 begin
   if FOwnJSONValue then
     FJSONValue.Free();

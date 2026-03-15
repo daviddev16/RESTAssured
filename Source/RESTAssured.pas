@@ -61,7 +61,6 @@ type
       destructor Destroy(); override;
     public
       class function Start(): IRESTAssuredSpec;
-      class procedure Fail(Message: String; Args: Array Of Const);
     end;
 
 function BearerAuth(Token: String): Variant;
@@ -93,7 +92,8 @@ begin
   FRESTRequest := FRESTClient.NewRequest();
 end;
 
-function TRESTAssured.Url;
+function TRESTAssured.Url(
+  Value: String): IRESTAssuredSpec;
 begin
   try
     FRESTClient.SetUrl(Value);
@@ -104,7 +104,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.WithResource;
+function TRESTAssured.WithResource(
+  Value: String): IRESTAssuredSpec;
 begin
   try
     FRESTRequest.SetResource(Value);
@@ -115,7 +116,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.WithBody;
+function TRESTAssured.WithBody(
+  Content: String): IRESTAssuredSpec;
 begin
   try
     FRESTRequest.SetBody(Content);
@@ -126,7 +128,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.WithContentType;
+function TRESTAssured.WithContentType(
+  Value: String): IRESTAssuredSpec;
 begin
   try
     FRESTRequest.SetContentType(Value);
@@ -137,7 +140,9 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.WithHeader;
+function TRESTAssured.WithHeader(
+  Key: String;
+  Value: Variant): IRESTAssuredSpec;
 begin
   try
     FRESTRequest.SetHeader(Key, Value);
@@ -148,7 +153,9 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.WithParameter;
+function TRESTAssured.WithParameter(
+  Key: String;
+  Value: Variant): IRESTAssuredSpec;
 begin
   try
     FRESTRequest.SetParameter(Key, Value);
@@ -159,7 +166,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.DoAfter;
+function TRESTAssured.DoAfter(
+  Runnable: TRunnable<IRESTResponse>): IRESTAssuredSpec;
 begin
   if Assigned(Runnable) then
     FAfterEventHandler.Enqueue(Runnable);
@@ -167,7 +175,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.DoBefore;
+function TRESTAssured.DoBefore(
+  Runnable: TRunnable<IRESTRequest>): IRESTAssuredSpec;
 begin
   if Assigned(Runnable) then
     FBeforeEventHandler.Enqueue(Runnable);
@@ -175,7 +184,8 @@ begin
   Result := Self;
 end;
 
-function TRESTAssured.PerformRequest;
+function TRESTAssured.PerformRequest(
+  Method: TRESTMethod): IRESTAssuredResponseSpec;
 var
   lUrl: String;
   lMethod: String;
@@ -205,17 +215,14 @@ begin
       Result := TRESTAssuredSpecProvider.Against(lRESTResponse);
     except
       on Ex: Exception do
-      begin
-        lMethod := TRESTAssuredErrorHandler.Beautify<TRESTMethod>(Method);
-        TRESTAssuredErrorHandler.Handle('PerformRequest', [lMethod], Ex);
-      end;
+        TRESTAssuredErrorHandler.Handle('PerformRequest', [Method.AsString()], Ex);
     end;
   finally
     FAfterEventHandler.TriggerOn(lRESTResponse);
   end;
 end;
 
-destructor TRESTAssured.Destroy;
+destructor TRESTAssured.Destroy();
 begin
   FRESTClient := nil;
   FRESTRequest := nil;
@@ -225,14 +232,9 @@ begin
   inherited;
 end;
 
-class function TRESTAssured.Start;
+class function TRESTAssured.Start(): IRESTAssuredSpec;
 begin
   Result := TRESTAssured.Create();
-end;
-
-class procedure TRESTAssured.Fail;
-begin
-  TRESTAssuredAssert.Fail(Message, Args);
 end;
 
 end.
