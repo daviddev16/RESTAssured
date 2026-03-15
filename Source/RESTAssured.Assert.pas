@@ -13,6 +13,7 @@ uses
 type
   TRESTAssuredAssert = class
     public
+      class procedure DoAssert(); inline;
       class function Make<X>(Value: TValue): X; overload;
       class function Make<X, Y>(Value: X): Y; overload;
       class procedure AreEqual<T>(Expected, Actual: T; Message: String);
@@ -44,6 +45,8 @@ var
   lComparer: IComparer<T>;
   lExpectedValue, lActualValue: TValue;
 begin
+  DoAssert();
+
   lComparer := TComparer<T>.Default;
   lActualValue := TValue.From<T>(Actual);
   lExpectedValue := TValue.From<T>(Expected);
@@ -66,6 +69,8 @@ class procedure TRESTAssuredAssert.IsGreaterThan<T>(
 var
   lGreaterValue, lActualValue: TValue;
 begin
+  DoAssert();
+
   lActualValue := TValue.From<T>(Actual);
   lGreaterValue := TValue.From<T>(GreaterValue);
 
@@ -87,6 +92,8 @@ class procedure TRESTAssuredAssert.IsLessThan<T>(
 var
   lLesserValue, lActualValue: TValue;
 begin
+  DoAssert();
+
   lActualValue := TValue.From<T>(Actual);
   lLesserValue := TValue.From<T>(LesserValue);
 
@@ -106,6 +113,8 @@ class procedure TRESTAssuredAssert.IsEmpty(
   Value: String;
   Message: String);
 begin
+  DoAssert();
+
   Message := TRESTAssuredUtils.Replace(Message,
                                        PLACEHOLDER_VALUE,
                                        Value);
@@ -117,6 +126,8 @@ class procedure TRESTAssuredAssert.IsNotEmpty(
   Value: String;
   Message: String);
 begin
+  DoAssert();
+
   Message := TRESTAssuredUtils.Replace(Message,
                                        PLACEHOLDER_VALUE,
                                        Value);
@@ -137,6 +148,12 @@ end;
 class procedure TRESTAssuredAssert.Pass();
 begin
   Assert.Pass();
+end;
+
+class procedure TRESTAssuredAssert.DoAssert();
+begin
+  if Assigned(Assert.OnAssert) then
+    Assert.OnAssert();
 end;
 
 class procedure TRESTAssuredAssert.Fail(Message: String);
