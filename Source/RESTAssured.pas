@@ -63,6 +63,7 @@ type
       class function Start(): IRESTAssuredSpec;
     end;
 
+function AnyString(): String;
 function BearerAuth(Token: String): Variant;
 function BasicAuth(Username: String; Password: String): Variant;
 
@@ -80,6 +81,11 @@ end;
 function BasicAuth(Username: String; Password: String): Variant;
 begin
   Result := 'Basic ' + TBase64Encoding.Base64.Encode(UserName + ':' + Password);
+end;
+
+function AnyString(): String;
+begin
+  Result := TGUID.Empty.ToString();
 end;
 
 { TRESTAssured }
@@ -202,6 +208,7 @@ begin
   try
     try
       FRESTClient.SetUrl(lUrl);
+      FRESTRequest.SetMethod(Method);
       FRESTRequest.SetContentType(lContentType);
 
       if Assigned(lHeaders) then
